@@ -14,6 +14,13 @@ static double wWidth=800,wHeight=600;
 // timer
 int timer = 0;
 
+void init();
+//orange, yellow, light blue, dark blue, purple
+// pink, dark gray
+float color[][3] = { {1.0,.58,.21}, {1.0,.79,.28}, {.18, .67, .84}, {0,.49,.96}, {.35,.35,.81},
+					{1,.17,.34}, {.56,.56,.58}
+};
+
 
 // Make sures that the window cannot be resized by the user to take advantage
 static void resize(int width, int height)
@@ -180,8 +187,8 @@ void randomInit()
 		for(i=1;i<=max_enemy_balls;i++)       
 		{	
 			srand(time(0));
-			vx[i]=(double)(rand()%15)/5;
-			vy[i]=(double)(rand()%15)/5;
+			vx[i]=(double)(rand()%10)/5;
+			vy[i]=(double)(rand()%10)/5;
 		}
 
 }
@@ -210,6 +217,20 @@ void checkCollision()
 
 }
 
+void deinit()
+{
+	glDisable(GL_LIGHT0);
+    glDisable(GL_NORMALIZE);
+    glDisable(GL_COLOR_MATERIAL);
+    glDisable(GL_LIGHTING);
+}
+
+int random_in_range (unsigned int min, unsigned int max)
+{
+	srand(time(0));
+	return max + rand() / (RAND_MAX / (min - max + 1) + 1);
+}
+
 static void display(void)
 {
 	int i;
@@ -218,11 +239,13 @@ static void display(void)
 	glClearColor(.17,0.17,0.17,1);
 
 	//display timer
+	deinit();
 	sprintf(timerarray,"%d",timer);
 	glColor3f(.18,.67,.84);
 	glRasterPos2f(-390,-290);
 	for(i = 0; timerarray[i]!='\0';i++)
 		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, timerarray[i]);
+	init();
 
     glColor3d(0.27,0.85,0.46);
     // The ball controlled by the user
@@ -232,9 +255,10 @@ static void display(void)
     glPopMatrix();
 
     // Enemy balls
-	glColor3f(1,.22,0.22);
+	
 	for(i=1;i<=max_enemy_balls;i++)
 	{
+		glColor3fv(color[i%6]);
 		glPushMatrix();
         glTranslated(x[i],y[i],0.0);
         glutSolidSphere(rad,30,30);
@@ -281,14 +305,13 @@ void addball(int no)
 	if(checkBound) 
 	{
 		timer += 1;
-		if(max_enemy_balls < ENEMY_BALLS && timer%4 == 0 && timer != 0)
+		if(max_enemy_balls < ENEMY_BALLS && timer%2 == 0 && timer != 0)
 		{
 			srand(time(0));
 			xpos = rand()%800-400;
 			ypos = rand()%600-300;
 			while(distance(xpos,ypos,x[0],-y[0])<=2*rad)
 			{
-				printf("\nRe computing");
 				srand(max_enemy_balls);
 				xpos = rand()%800-400;
 				ypos = rand()%600-300;
@@ -362,6 +385,27 @@ const GLfloat mat_diffuse[]    = { 0.8f, 0.8f, 0.8f, 1.0f };
 const GLfloat mat_specular[]   = { 1.0f, 1.0f, 1.0f, 1.0f };
 const GLfloat high_shininess[] = { 100.0f };
 
+void init()
+{
+	glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+	glDisable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
+
+    glEnable(GL_LIGHT0);
+    glEnable(GL_NORMALIZE);
+    glEnable(GL_COLOR_MATERIAL);
+    glEnable(GL_LIGHTING);
+	glLightfv(GL_LIGHT0, GL_AMBIENT,  light_ambient);
+    glLightfv(GL_LIGHT0, GL_DIFFUSE,  light_diffuse);
+    glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
+    glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+
+    glMaterialfv(GL_FRONT, GL_AMBIENT,   mat_ambient);
+    glMaterialfv(GL_FRONT, GL_DIFFUSE,   mat_diffuse);
+    glMaterialfv(GL_FRONT, GL_SPECULAR,  mat_specular);
+    glMaterialfv(GL_FRONT, GL_SHININESS, high_shininess);
+}
 /* Program entry point */
 
 int main(int argc, char *argv[])
@@ -382,29 +426,7 @@ int main(int argc, char *argv[])
 	glutMouseFunc(reverse);
     glutIdleFunc(idle);
 	
-
-    glClear(GL_COLOR_BUFFER_BIT);
-    glClearColor(0,0,0,1);
-    glEnable(GL_CULL_FACE);
-    glCullFace(GL_BACK);
-
-    glDisable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LESS);
-
-    glEnable(GL_LIGHT0);
-    glEnable(GL_NORMALIZE);
-    glEnable(GL_COLOR_MATERIAL);
-    glEnable(GL_LIGHTING);
-
-    glLightfv(GL_LIGHT0, GL_AMBIENT,  light_ambient);
-    glLightfv(GL_LIGHT0, GL_DIFFUSE,  light_diffuse);
-    glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
-    glLightfv(GL_LIGHT0, GL_POSITION, light_position);
-
-    glMaterialfv(GL_FRONT, GL_AMBIENT,   mat_ambient);
-    glMaterialfv(GL_FRONT, GL_DIFFUSE,   mat_diffuse);
-    glMaterialfv(GL_FRONT, GL_SPECULAR,  mat_specular);
-    glMaterialfv(GL_FRONT, GL_SHININESS, high_shininess);
+	init();
 
 
     glutMainLoop();
