@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <time.h>
 #include <glut.h>
 #include <cstdio>
 #include <math.h>
@@ -10,6 +11,9 @@ int max_enemy_balls = 1;
 #define ENEMY_BALLS 20
 // Size of the widow
 static double wWidth=800,wHeight=600;
+// timer
+int timer = 0;
+
 
 // Make sures that the window cannot be resized by the user to take advantage
 static void resize(int width, int height)
@@ -104,10 +108,10 @@ void checkVel(double &vx,double &vy)
 {
     if(checkBound==true)
     {
-		if(vx<1.5)
-		vx=1.5;
-		if(vy<1.5)
-		vy=1.5;
+		if(vx<2)
+		vx=2;
+		if(vy<2)
+		vy=2;
     }
 }
 //code for checking boundary collisions
@@ -151,7 +155,7 @@ static void dropAll()
 		if(checkBound)
 			printf("%d",endTime-startTime);
         checkBound=false;
-		start = false;
+		//start = false;
         endTime=glutGet(GLUT_ELAPSED_TIME);
 		for(i=1;i<=max_enemy_balls;i++)
 		{
@@ -159,8 +163,6 @@ static void dropAll()
 			vy[i]=-1.5*sy[i];
 		}
         glutPostRedisplay();
-			
-
 }
 //randomize the initial positions.............unsatisfactory code
 void randomInit()
@@ -169,6 +171,7 @@ void randomInit()
 
 		for(i=1;i<=max_enemy_balls;i++)   
 		{
+			srand(time(0));
 			sx[i]=sy[i]=1;
 			x[i]=rand()%800-400;
 			y[i]=rand()%600-300;
@@ -176,6 +179,7 @@ void randomInit()
 
 		for(i=1;i<=max_enemy_balls;i++)       
 		{	
+			srand(time(0));
 			vx[i]=(double)(rand()%15)/5;
 			vy[i]=(double)(rand()%15)/5;
 		}
@@ -208,9 +212,18 @@ void checkCollision()
 
 static void display(void)
 {
-	int i,j;
+	int i;
+	char timerarray[10];
     glClear(GL_COLOR_BUFFER_BIT);
 	glClearColor(.17,0.17,0.17,1);
+
+	//display timer
+	sprintf(timerarray,"%d",timer);
+	glColor3f(.18,.67,.84);
+	glRasterPos2f(-390,-290);
+	for(i = 0; timerarray[i]!='\0';i++)
+		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, timerarray[i]);
+
     glColor3d(0.27,0.85,0.46);
     // The ball controlled by the user
     glPushMatrix();
@@ -255,22 +268,28 @@ static void display(void)
 			y[i]=y[i]+vy[i]*sy[i];
 		}
     }
+	
     glFlush();
     glutSwapBuffers();
     glGetError();
 }
+
 
 void addball(int no)
 {
 	double xpos,ypos;
 	if(checkBound) 
 	{
-		if(max_enemy_balls < ENEMY_BALLS)
+		timer += 1;
+		if(max_enemy_balls < ENEMY_BALLS && timer%4 == 0 && timer != 0)
 		{
+			srand(time(0));
 			xpos = rand()%800-400;
 			ypos = rand()%600-300;
 			while(distance(xpos,ypos,x[0],-y[0])<=2*rad)
 			{
+				printf("\nRe computing");
+				srand(max_enemy_balls);
 				xpos = rand()%800-400;
 				ypos = rand()%600-300;
 			}
@@ -280,10 +299,12 @@ void addball(int no)
 			y[max_enemy_balls]=ypos;
 			vx[max_enemy_balls]=(double)(rand()%15)/5;
 			vy[max_enemy_balls]=(double)(rand()%15)/5;
-			glutTimerFunc(1000,addball,1);
+			//glutTimerFunc(1000,addball,1);
 		}
 	}
+	glutTimerFunc(1000,addball,1);
 }
+
 
 //To quit the game press q........to start press s
 void keyboard (unsigned char key, int x, int y)
@@ -295,7 +316,7 @@ void keyboard (unsigned char key, int x, int y)
                     break;
                 case 's':
                     start=true;
-					glutTimerFunc(2000,addball,1);
+					glutTimerFunc(1000,addball,1);
                     if(start==false)
                     startTime=glutGet(GLUT_ELAPSED_TIME);//note down the initial time
                     break;
