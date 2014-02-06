@@ -3,6 +3,7 @@
 #include <glut.h>
 #include <cstdio>
 #include <math.h>
+#include <windows.h>
 #include "vmath.h"
 
 // Number of enemy balls in the screen currently
@@ -13,6 +14,14 @@ int max_enemy_balls = 1;
 static double wWidth=800,wHeight=600;
 // timer
 int timer = 0;
+//  The number of frames
+int frameCount = 0;
+//  Number of frames per second
+float fps = 0;
+//  currentTime - previousTime is the time elapsed
+//  between every call of the Idle function
+int currentTime = 0, previousTime = 0;
+
 
 void init();
 //orange, yellow, light blue, dark blue, purple
@@ -46,7 +55,7 @@ static double rad=25.0,x[ENEMY_BALLS + 1],y[ENEMY_BALLS + 1],sx[ENEMY_BALLS + 1]
 int startTime,endTime;  //calculating the time
 bool start=false;   //true when game starts
 bool hitWall=false,checkBound=true; 
-bool ballsMoving = false;
+bool gameover = false;
 //hitWall for boundary checking and reflection along wall.............and checkBound becomes false when game is over
 void collision2Ds(double& xx1, double& yy1, double& xx2, double& yy2,
                  double& vxx1, double& vyy1, double& vxx2, double& vyy2,
@@ -211,7 +220,9 @@ void checkCollision()
 		for(i=1;i<=max_enemy_balls;i++)
 		{
 			if(distance(x[i],y[i],x[0],-y[0])<=2*rad)
+			{
 				dropAll();
+			}
 		}
         glutPostRedisplay();
 
@@ -234,18 +245,11 @@ int random_in_range (unsigned int min, unsigned int max)
 static void display(void)
 {
 	int i;
-	char timerarray[10];
+	char timerarray[10], fpsarray[20];
     glClear(GL_COLOR_BUFFER_BIT);
 	glClearColor(.17,0.17,0.17,1);
 
-	//display timer
-	deinit();
-	sprintf(timerarray,"%d",timer);
-	glColor3f(.18,.67,.84);
-	glRasterPos2f(-390,-290);
-	for(i = 0; timerarray[i]!='\0';i++)
-		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, timerarray[i]);
-	init();
+	
 
     glColor3d(0.27,0.85,0.46);
     // The ball controlled by the user
@@ -264,6 +268,21 @@ static void display(void)
         glutSolidSphere(rad,30,30);
 		glPopMatrix();
 	}
+	
+	//display timer
+	deinit();
+	sprintf(timerarray,"Score: %d",timer);
+	glColor3f(.18,.67,.84);
+	glRasterPos2f(-390,-290);
+	for(i = 0; timerarray[i]!='\0';i++)
+		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, timerarray[i]);
+	//display fps
+	sprintf(fpsarray,"FPS: %4.2f",fps);
+	glRasterPos2f(300,-290);
+	for(i = 0; fpsarray[i]!='\0';i++)
+		glutBitmapCharacter(GLUT_BITMAP_HELVETICA_10, fpsarray[i]);
+
+	init();
 
     checkCollision();
 
@@ -285,7 +304,7 @@ static void display(void)
             hitWall=false;
     }
     //if game was started the change the position
-    if(start){
+	if(start){
 		for(int i=1;i<max_enemy_balls + 1;i++)
 		{
 			x[i]=x[i]+vx[i]*sx[i];
@@ -296,6 +315,7 @@ static void display(void)
     glFlush();
     glutSwapBuffers();
     glGetError();
+	Sleep(400/fps);
 }
 
 
@@ -368,10 +388,36 @@ void reverse(int button, int state, int x, int y) {
     }
 }
 
+void calculateFPS()
+{
+    //  Increase frame count
+    frameCount++;
 
+    //  Get the number of milliseconds since glutInit called 
+    //  (or first call to glutGet(GLUT ELAPSED TIME)).
+    currentTime = glutGet(GLUT_ELAPSED_TIME);
+
+    //  Calculate time passed
+    int timeInterval = currentTime - previousTime;
+
+    if(timeInterval > 1000)
+    {
+        //  calculate the number of frames per second
+        fps = frameCount / (timeInterval / 1000.0f);
+
+        //  Set time
+        previousTime = currentTime;
+
+        //  Reset frame count
+        frameCount = 0;
+    }
+}
 
 static void idle(void)
 {
+	//  Calculate FPS
+    calculateFPS();
+
     glutPostRedisplay();
 }
 
