@@ -245,7 +245,7 @@ int random_in_range (unsigned int min, unsigned int max)
 static void display(void)
 {
 	int i;
-	char timerarray[10], fpsarray[20];
+	char timerarray[20], fpsarray[20];
     glClear(GL_COLOR_BUFFER_BIT);
 	glClearColor(.17,0.17,0.17,1);
 
@@ -315,7 +315,8 @@ static void display(void)
     glFlush();
     glutSwapBuffers();
     glGetError();
-	Sleep(400/fps);
+	if(fps > 300)
+	Sleep(2);
 }
 
 
@@ -325,7 +326,7 @@ void addball(int no)
 	if(checkBound) 
 	{
 		timer += 1;
-		if(max_enemy_balls < ENEMY_BALLS && timer%2 == 0 && timer != 0)
+		if(max_enemy_balls < ENEMY_BALLS && timer%4 == 0 && timer != 0)
 		{
 			srand(time(0));
 			xpos = rand()%800-400;
@@ -361,6 +362,15 @@ void keyboard (unsigned char key, int x, int y)
                     start=true;
 					glutTimerFunc(1000,addball,1);
                     if(start==false)
+                    startTime=glutGet(GLUT_ELAPSED_TIME);//note down the initial time
+                    break;
+				 case 'r':
+                    start=true;
+					checkBound = true;
+					timer = 0;
+					randomInit();
+					max_enemy_balls = 1;
+					if(start==false)
                     startTime=glutGet(GLUT_ELAPSED_TIME);//note down the initial time
                     break;
 				default:
