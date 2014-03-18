@@ -22,7 +22,7 @@ float fps = 0;
 //  between every call of the Idle function
 int currentTime = 0, previousTime = 0;
 
-
+void display();
 void init();
 //orange, yellow, light blue, dark blue, purple
 // pink, dark gray
@@ -178,7 +178,7 @@ static void dropAll()
 			vx[i]=0;
 			vy[i]=-1.5*sy[i];
 		}
-        glutPostRedisplay();
+        //glutPostRedisplay();
 }
 //randomize the initial positions.............unsatisfactory code
 void randomInit()
@@ -224,7 +224,7 @@ void checkCollision()
 				dropAll();
 			}
 		}
-        glutPostRedisplay();
+        //glutPostRedisplay();
 
 }
 
@@ -240,6 +240,10 @@ int random_in_range (unsigned int min, unsigned int max)
 {
 	srand(time(0));
 	return max + rand() / (RAND_MAX / (min - max + 1) + 1);
+}
+void displayagain(int value)
+{
+	display();
 }
 
 static void display(void)
@@ -315,8 +319,9 @@ static void display(void)
     glFlush();
     glutSwapBuffers();
     glGetError();
-	if(fps > 300)
-	Sleep(2);
+	glutTimerFunc(2,displayagain,2);
+	/*if(fps > 300)
+	Sleep(2);*/
 }
 
 
@@ -383,7 +388,7 @@ void mouse (int x2,int y2)
 
         x[0]=x2-wWidth/2;
         y[0]=y2-wHeight/2;
-        glutPostRedisplay();
+        //glutPostRedisplay();
 
 
 }
@@ -428,7 +433,7 @@ static void idle(void)
 	//  Calculate FPS
     calculateFPS();
 
-    glutPostRedisplay();
+    //glutPostRedisplay();
 }
 
 const GLfloat light_ambient[]  = { 0.0f, 0.0f, 0.0f, 1.0f };
@@ -489,5 +494,3 @@ int main(int argc, char *argv[])
 	
     return EXIT_SUCCESS;
 }
-
-
