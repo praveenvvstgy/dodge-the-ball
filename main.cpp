@@ -22,6 +22,7 @@ float fps = 0;
 //  between every call of the Idle function
 int currentTime = 0, previousTime = 0;
 
+void displayAgain(int value);
 
 void init();
 //orange, yellow, light blue, dark blue, purple
@@ -178,7 +179,7 @@ static void dropAll()
 			vx[i]=0;
 			vy[i]=-1.5*sy[i];
 		}
-        glutPostRedisplay();
+        
 }
 //randomize the initial positions.............unsatisfactory code
 void randomInit()
@@ -224,7 +225,7 @@ void checkCollision()
 				dropAll();
 			}
 		}
-        glutPostRedisplay();
+        
 
 }
 
@@ -311,8 +312,12 @@ static void display(void)
     glFlush();
     glutSwapBuffers();
     glGetError();
-	if(fps > 300)
-	Sleep(2);
+	glutTimerFunc(1,displayAgain,1);
+}
+
+void displayAgain(int value)
+{
+	glutPostRedisplay();
 }
 
 
@@ -379,7 +384,7 @@ void mouse (int x2,int y2)
 
         x[0]=x2-wWidth/2;
         y[0]=y2-wHeight/2;
-        glutPostRedisplay();
+        
 
 
 }
@@ -424,7 +429,7 @@ static void idle(void)
 	//  Calculate FPS
     calculateFPS();
 
-    glutPostRedisplay();
+    
 }
 
 const GLfloat light_ambient[]  = { 0.0f, 0.0f, 0.0f, 1.0f };
